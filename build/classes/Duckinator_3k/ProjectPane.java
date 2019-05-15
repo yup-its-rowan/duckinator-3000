@@ -6,10 +6,8 @@
 package Duckinator_3k;
 
 import java.util.ArrayList;
-import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.ToggleGroup;
@@ -25,7 +23,6 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
 /**
- *
  * @author akkir
  */
 
@@ -54,16 +51,11 @@ public class ProjectPane extends Pane{
     private int ticksPerRotation = 1120;
     private double angleTemp;
     private TextArea code;
-    private String moveHere;
-    private String tankDriveMotors, holonomicDriveMotors, driveMotors;
-    private String tankDriveInit, holonomicDriveInit, driveInit;
-    private String resetBusyForwardTank, resetBusyForwardHolo, resetBusyForward;
-    private String rotateTank, rotateHolo, rotating;
-    private String tankZPower, holoZPower, zPower;
+    private String tankDriveMotors, holonomicDriveMotors, driveMotors, tankDriveInit, holonomicDriveInit, driveInit, movementTemp, moveHere;
+    private String resetBusyForwardTank, resetBusyForwardHolo, resetBusyForward, rotateTank, rotateHolo, rotating, tankZPower, holoZPower, zPower;
     private RadioButton tankDrive, holonomicDrive;
     private ToggleGroup drives;
     private int togglingKeep = 1;
-    private String movementTemp;
     
     public ProjectPane (){  
         rect = new Rectangle(1200, 600, Color.BLANCHEDALMOND);
@@ -101,7 +93,7 @@ public class ProjectPane extends Pane{
         getChildren().add(code);
         
         drives = new ToggleGroup();
-
+        
         tankDrive = new RadioButton("Tank Drive");
         tankDrive.setLayoutX(545);
         tankDrive.setLayoutY(270);
@@ -250,17 +242,15 @@ public class ProjectPane extends Pane{
         
         tankDrive.setOnAction(this::processRadioButtons);
         holonomicDrive.setOnAction(this::processRadioButtons);
-        
         clear.setOnAction(this::processButtonPress);
         generate.setOnAction(this::generation);
         fieldHolder.setOnMouseClicked(this::processMousePress);
+        code.setOnKeyPressed(this::processKeyPress);
         driveMotors = tankDriveMotors;
         driveInit = tankDriveInit;
         resetBusyForward = resetBusyForwardTank;
         rotating = rotateTank;
-        zPower = tankZPower;
-        
-        code.setOnKeyPressed(this::processKeyPress);
+        zPower = tankZPower;   
     }
     
     public void processMousePress(MouseEvent e){
@@ -287,7 +277,6 @@ public class ProjectPane extends Pane{
                 }else if (lineTicker > 1){
                     movementTemp = ("            goForward(" + (int)Math.round(encoderPathLength.get(lineTicker-1)) + ");\n");
                 }
-
             } if (lineTicker > 1){
                 angleChanges.add(getAngle2((double)xPixel.get(lineTicker-2), (double)xPixel.get(lineTicker-1), (double)xPixel.get(lineTicker), (double)yPixel.get(lineTicker-2), (double)yPixel.get(lineTicker-1), (double)yPixel.get(lineTicker), lineLength.get(lineTicker-2), lineLength.get(lineTicker-1)));
                 orientation(xPixel.get(lineTicker-2), xPixel.get(lineTicker-1), xPixel.get(lineTicker),yPixel.get(lineTicker-2), yPixel.get(lineTicker-1), yPixel.get(lineTicker));

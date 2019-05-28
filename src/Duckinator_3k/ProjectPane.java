@@ -5,11 +5,18 @@
  */
 package Duckinator_3k;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -47,15 +54,19 @@ public class ProjectPane extends Pane{
     private int fieldMeasurementPixels = 510;
     private int fieldMeasurementInches = 144;
     private double conversionFactorPixelInch = ((double) fieldMeasurementInches/ (double) fieldMeasurementPixels);
-    private double wheelRadius = 3;
-    private int ticksPerRotation = 1120;
-    private double angleTemp;
+    private double wheelDiameter = 4;
+    private double ticksPerRotation = 1120;
+    private double angleTemp, multiplier;
     private TextArea code;
     private String tankDriveMotors, holonomicDriveMotors, driveMotors, tankDriveInit, holonomicDriveInit, driveInit, movementTemp, moveHere;
-    private String resetBusyForwardTank, resetBusyForwardHolo, resetBusyForward, rotateTank, rotateHolo, rotating, tankZPower, holoZPower, zPower;
-    private RadioButton tankDrive, holonomicDrive;
+    private String resetBusyForwardTank, resetBusyForwardHoloMeca, resetBusyForward, rotateTank, rotateHolo, rotating, tankZPower, holoZPower, zPower;
+    private RadioButton tankDrive, holonomicDrive, mecanumDrive;
     private ToggleGroup drives;
     private int togglingKeep = 1;
+    private Label wheelDi, ticksPer;
+    private TextField wheelDia, ticksPerr;
+    private Label careful;
+    private Hyperlink github;
     
     public ProjectPane (){  
         rect = new Rectangle(1200, 600, Color.BLANCHEDALMOND);
@@ -82,6 +93,36 @@ public class ProjectPane extends Pane{
         clear.setLayoutY(20);
         getChildren().add(clear);
         
+        github = new Hyperlink("github.com/yup-its-rowan");
+        github.setLayoutX(850);
+        github.setLayoutY(22);
+        getChildren().add(github);
+        
+        careful = new Label("Careful: \nAdjusting wheel dia or TPR mid-path affects the resulting code");
+        careful.setLayoutX(540);
+        careful.setLayoutY(450);
+        getChildren().add(careful);
+        
+        wheelDi = new Label("Wheel Diameter: ");
+        wheelDi.setLayoutX(540);
+        wheelDi.setLayoutY(320);
+        getChildren().add(wheelDi);
+        
+        wheelDia = new TextField("4");
+        wheelDia.setLayoutX(680);
+        wheelDia.setLayoutY(317);
+        getChildren().add(wheelDia);
+        
+        ticksPer = new Label("Ticks Per Rotation: ");
+        ticksPer.setLayoutX(540);
+        ticksPer.setLayoutY(360);
+        getChildren().add(ticksPer);
+        
+        ticksPerr = new TextField("1120");
+        ticksPerr.setLayoutX(680);
+        ticksPerr.setLayoutY(357);
+        getChildren().add(ticksPerr);
+        
         generate = new Button("Generate Code");
         generate.setLayoutX(600);
         generate.setLayoutY(20);
@@ -101,11 +142,17 @@ public class ProjectPane extends Pane{
         tankDrive.setSelected(true);
         getChildren().add(tankDrive);
 
-        holonomicDrive = new RadioButton("X-Drive / Mecanum");
+        holonomicDrive = new RadioButton("X-Drive");
         holonomicDrive.setLayoutX(670);
         holonomicDrive.setLayoutY(270);
         holonomicDrive.setToggleGroup(drives);
         getChildren().add(holonomicDrive);
+        
+        mecanumDrive = new RadioButton("Mecanum");
+        mecanumDrive.setLayoutX(795);
+        mecanumDrive.setLayoutY(270);
+        mecanumDrive.setToggleGroup(drives);
+        getChildren().add(mecanumDrive);
         
         tankDriveMotors = (
         "    private DcMotor leftWheel;\n" +
@@ -156,37 +203,7 @@ public class ProjectPane extends Pane{
 "    }\n"              
                 );
         
-        resetBusyForwardHolo = (
-        "    public void motorReset() {\n" +
-"        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
-"        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
-"        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
-"        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
-"        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
-"        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
-"        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
-"        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
-"    }\n" +
-"    public void powerBusy() {\n" +
-"        fl.setPower(0.5);\n" +
-"        fr.setPower(0.5);\n" +
-"        bl.setPower(0.5);\n" +
-"        br.setPower(0.5);\n" +                
-"        while ((fl.isBusy() && fr())&&(bl.isBusy() && br.isBusy())){}\n" +
-"        fl.setPower(0);\n" +
-"        fr.setPower(0);\n" +
-"        bl.setPower(0);\n" +
-"        br.setPower(0);\n" +
-"    }\n" +
-"    public void goForward(int gofront){\n" +
-"        motorReset();\n" +
-"        fl.setTargetPosition((int)Math.round(1.2*gofront));\n" + 
-"        fr.setTargetPosition((int)Math.round(-1.2*gofront));\n" +
-"        bl.setTargetPosition((int)Math.round(1.2*gofront));\n" + 
-"        br.setTargetPosition((int)Math.round(-1.2*gofront ));\n" +
-"        powerBusy();\n" +
-"    }\n"         
-                );
+        
         
         rotateTank = (
 "    private void rotate(int degrees) {\n" +
@@ -242,15 +259,31 @@ public class ProjectPane extends Pane{
         
         tankDrive.setOnAction(this::processRadioButtons);
         holonomicDrive.setOnAction(this::processRadioButtons);
+        mecanumDrive.setOnAction(this::processRadioButtons);
         clear.setOnAction(this::processButtonPress);
         generate.setOnAction(this::generation);
         fieldHolder.setOnMouseClicked(this::processMousePress);
         code.setOnKeyPressed(this::processKeyPress);
+        github.setOnAction(this::hyperlinky);
         driveMotors = tankDriveMotors;
         driveInit = tankDriveInit;
         resetBusyForward = resetBusyForwardTank;
         rotating = rotateTank;
         zPower = tankZPower;   
+    }
+        
+    public void hyperlinky(ActionEvent eeeee){
+        if (eeeee.getSource() == github){
+            if (Desktop.isDesktopSupported()){
+                try {
+                    Desktop.getDesktop().browse(new URI("https://www.github.com/yup-its-rowan"));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                } catch (URISyntaxException e1) {
+                    e1.printStackTrace();
+                }           
+            }          
+        }
     }
     
     public void processMousePress(MouseEvent e){
@@ -259,6 +292,7 @@ public class ProjectPane extends Pane{
             yPoint = (int) e.getSceneY();
             xPixel.add(xPoint);
             yPixel.add(yPoint);
+            robotSpecs();
             if (circleTicker == 0){
                 circleTicker = 1;
                 Circle startCircle = new Circle(xPoint, yPoint, 3, Color.RED);
@@ -300,11 +334,20 @@ public class ProjectPane extends Pane{
             getChildren().add(code);
             getChildren().add(duckHolder);
             getChildren().add(tankDrive);
+            getChildren().add(mecanumDrive);
             getChildren().add(holonomicDrive);
+            getChildren().add(ticksPer);
+            getChildren().add(ticksPerr);
+            getChildren().add(wheelDi);
+            getChildren().add(wheelDia);
+            getChildren().add(careful);
+            getChildren().add(github);
             if (togglingKeep ==1){
                 tankDrive.setSelected(true);
             }else if (togglingKeep ==2){
                 holonomicDrive.setSelected(true);
+            } else if (togglingKeep == 3){
+                mecanumDrive.setSelected(true);
             }
             xPixel.clear();
             yPixel.clear();
@@ -321,7 +364,7 @@ public class ProjectPane extends Pane{
     }
     
     public double convertInchesToEncoderTicks(double c){
-        return ((c/(2*Math.PI*wheelRadius))*ticksPerRotation);
+        return ((c/(Math.PI*wheelDiameter))*ticksPerRotation);
     }
     
     public double getAngle2(double x1, double x2, double x3, double y1, double y2, double y3, double length1, double length2){
@@ -352,6 +395,7 @@ public class ProjectPane extends Pane{
     }
     
     public void processRadioButtons(ActionEvent e){
+        
         if ((e.getSource() == tankDrive)){
             driveMotors = tankDriveMotors;
             driveInit = tankDriveInit;
@@ -362,11 +406,63 @@ public class ProjectPane extends Pane{
         } else if (e.getSource() == holonomicDrive){
             driveMotors = holonomicDriveMotors;
             driveInit = holonomicDriveInit;
-            resetBusyForward = resetBusyForwardHolo;
+            multiplier = 1.2;
+            resety();
+            resetBusyForward = resetBusyForwardHoloMeca;
             rotating = rotateHolo;
             zPower = holoZPower;
             togglingKeep = 2;
+            
+        } else if (e.getSource() == mecanumDrive){
+            driveMotors = holonomicDriveMotors;
+            driveInit = holonomicDriveInit;
+            multiplier = 1;
+            resety();
+            resetBusyForward = resetBusyForwardHoloMeca;
+            rotating = rotateHolo;
+            zPower = holoZPower;
+            togglingKeep = 3;
+            
         }
+    }
+    
+    public void resety(){
+        resetBusyForwardHoloMeca = (
+        "    public void motorReset() {\n" +
+"        fl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
+"        fr.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
+"        bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
+"        br.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);\n" +
+"        fl.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
+"        fr.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
+"        bl.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
+"        br.setMode(DcMotor.RunMode.RUN_TO_POSITION);\n" +
+"    }\n" +
+"    public void powerBusy() {\n" +
+"        fl.setPower(0.5);\n" +
+"        fr.setPower(0.5);\n" +
+"        bl.setPower(0.5);\n" +
+"        br.setPower(0.5);\n" +                
+"        while ((fl.isBusy() && fr())&&(bl.isBusy() && br.isBusy())){}\n" +
+"        fl.setPower(0);\n" +
+"        fr.setPower(0);\n" +
+"        bl.setPower(0);\n" +
+"        br.setPower(0);\n" +
+"    }\n" +
+"    public void goForward(int gofront){\n" +
+"        motorReset();\n" +
+"        fl.setTargetPosition((int)Math.round("+multiplier+"*gofront));\n" + 
+"        fr.setTargetPosition((int)Math.round(-"+multiplier+"*gofront));\n" +
+"        bl.setTargetPosition((int)Math.round("+multiplier+"*gofront));\n" + 
+"        br.setTargetPosition((int)Math.round("+multiplier+"*gofront ));\n" +
+"        powerBusy();\n" +
+"    }\n"         
+                );
+    }
+    
+    public void robotSpecs(){
+        wheelDiameter = new Double(wheelDia.getText());
+        ticksPerRotation = new Double(ticksPerr.getText());
     }
     
     public void generation(ActionEvent DIO){

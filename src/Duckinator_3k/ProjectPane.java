@@ -103,7 +103,7 @@ public class ProjectPane extends Pane{
         careful.setLayoutY(450);
         getChildren().add(careful);
         
-        wheelDi = new Label("Wheel Diameter: ");
+        wheelDi = new Label("Wheel Diameter (Inches): ");
         wheelDi.setLayoutX(540);
         wheelDi.setLayoutY(320);
         getChildren().add(wheelDi);
